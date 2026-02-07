@@ -5,7 +5,7 @@ Community-curated token pairs on Base. Users submit DexScreener pairs, vote on t
 ## Architecture
 
 - **Next.js app** – Submit page, voting, admin approval, main listing
-- **Prisma + PostgreSQL** – Submissions and votes
+- **Prisma + SQLite or PostgreSQL** – Submissions and votes (SQLite for local/Render; Postgres for Vercel)
 - **Wallet connect** – wagmi/viem for Base
 - **DexScreener API** – Market data for listed tokens
 
@@ -54,7 +54,25 @@ If you have `PONDER_API_URL` in `.env` from an older setup, you can remove it.
    - Format: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
    - The `https://xxx.supabase.co` URL is for the REST API and will **not** work with Prisma.
 
-4. **Deploy** – Build runs `prisma generate` then `next build`. **Before first deploy**, run `npx prisma db push` locally with `DATABASE_URL` set to your production DB URL to create tables (or run the SQL from `prisma/schema.prisma` in Supabase SQL editor).
+4. **Deploy** – Build runs `prisma generate` then `next build`. **Before first deploy**, create tables either:
+   - Run `npx prisma db push` locally with `DATABASE_URL` set to your production DB URL, or
+   - In Supabase SQL Editor, run the SQL in `prisma/init.sql`
+
+## Deploy to Render (SQLite – simpler, no external DB)
+
+1. **Create a Web Service** at [dashboard.render.com](https://dashboard.render.com)
+2. **Connect your GitHub repo**
+3. **Add a Persistent Disk** (required for SQLite):
+   - In the service → Disks → Add Disk
+   - Mount path: `/data`
+   - Size: 1 GB
+4. **Environment variables**:
+   - `DATABASE_URL` = `file:/data/prod.db`
+   - `ADMIN_ADDRESSES` = your wallet addresses
+5. **Build command**: `npm install && npm run build`
+6. **Start command**: `npx prisma db push && npm start`
+
+The start command runs `prisma db push` on each deploy to create/sync tables, then starts the app. No Supabase or Postgres needed. **Note:** Persistent disks require a paid Render plan (Starter $7/mo).
 
 ## Flow
 

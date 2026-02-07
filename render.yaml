@@ -1,0 +1,17 @@
+# Render Blueprint - Deploy with SQLite on a persistent disk
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: fomo4claw
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npx prisma db push && npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_ADDRESSES
+        sync: false
+    # Add a Persistent Disk in Render Dashboard:
+    # - Mount path: /data
+    # - Size: 1 GB
+    # Then set DATABASE_URL="file:/data/prod.db"
