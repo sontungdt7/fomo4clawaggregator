@@ -10,8 +10,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Fomo4Claw — Agent Coins',
-  description: 'Submit and vote on DexScreener pairs. Approved tokens listed on Base.',
+  title: 'Fomo4Claw — Community Curated Agent Coins',
+  description: 'Community Curated Agent Coins.',
   icons: { icon: '/logo.png' },
 }
 

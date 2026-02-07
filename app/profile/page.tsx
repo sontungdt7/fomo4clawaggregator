@@ -135,7 +135,7 @@ export default function ProfilePage() {
           <h2 className="mb-4 text-lg font-semibold">Wallet</h2>
           <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted/50 px-3 sm:px-4 py-2 font-mono text-sm">
-              <span className="min-w-0 flex-1 text-muted-foreground sm:flex-none" title={address}>
+              <span className="min-w-0 flex-1 text-muted-foreground sm:flex-none" title={address ?? undefined}>
                 <span className="sm:hidden">{shortAddress}</span>
                 <span className="hidden sm:inline">{address}</span>
               </span>
