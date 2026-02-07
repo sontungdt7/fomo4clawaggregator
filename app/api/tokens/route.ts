@@ -24,9 +24,11 @@ type PairInfo = {
 }
 
 const MIN_VOLUME = 1
-const MAX_TOKENS_TO_FETCH = 50 // limit DexScreener calls
+const MAX_TOKENS_TO_FETCH = 10
 const DEXSCREENER_CONCURRENCY = 10
-const CACHE_TTL_MS = 1 * 60 * 1000 // 1 minute
+/** DexScreener: 60 req/min. With 10 tokens, 1 call each (pairInfo cached 5min) = 10/min. */
+const MARKET_CACHE_TTL_MS = 30 * 1000 // 30s - 10 tokens allows fresher updates under 60/min
+const PAIR_INFO_CACHE_TTL_MS = 5 * 60 * 1000 // 5 min - image/quoteSymbol rarely change
 const marketCache = new Map<
   string,
   { data: NonNullable<Awaited<ReturnType<typeof fetchTokenPairs>>>; expires: number }
@@ -40,7 +42,7 @@ function getCached(address: string) {
 }
 
 function setCached(address: string, data: NonNullable<Awaited<ReturnType<typeof fetchTokenPairs>>>) {
-  marketCache.set(address.toLowerCase(), { data, expires: Date.now() + CACHE_TTL_MS })
+  marketCache.set(address.toLowerCase(), { data, expires: Date.now() + MARKET_CACHE_TTL_MS })
 }
 
 async function runWithConcurrency<T, R>(
@@ -112,7 +114,7 @@ export async function GET(request: Request) {
             pairLabel = pairInfo.labels?.[0]
             pairInfoCache.set(s.dexScreenerUrl, {
               data: { image: image ?? undefined, quoteSymbol, labels: pairInfo.labels },
-              expires: Date.now() + CACHE_TTL_MS,
+              expires: Date.now() + PAIR_INFO_CACHE_TTL_MS,
             })
           }
         }

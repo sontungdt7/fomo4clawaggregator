@@ -19,7 +19,7 @@ export function TokenList() {
 
   const { data, error } = useQuery({
     queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab],
-    staleTime: 60_000, // 1 min - avoid refetch on rapid tab/sort changes
+    staleTime: 30_000, // 30s - matches server cache; 10 pairs keeps under DexScreener 60/min
     // Show "No tokens yet" immediately while fetching, instead of loading skeleton
     placeholderData: { tokens: [], total: 0, totalVolume: 0, totalTxns: 0 },
     queryFn: async () => {
