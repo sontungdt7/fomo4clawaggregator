@@ -43,13 +43,18 @@ If you have `PONDER_API_URL` in `.env` from an older setup, you can remove it.
 
 ## Deploy to Vercel
 
-1. **Create a PostgreSQL database** – Vercel Postgres (recommended) or Neon/Supabase.
+1. **Create a PostgreSQL database** – Vercel Postgres (recommended), Neon, or Supabase.
 2. **Connect the repo** to Vercel and add env vars:
-   - `DATABASE_URL` – your Postgres connection URL (Vercel Postgres sets this automatically)
+   - `DATABASE_URL` – **must be a PostgreSQL connection string** (starts with `postgresql://` or `postgres://`)
    - `ADMIN_ADDRESSES` – comma-separated admin wallet addresses
-3. **Deploy** – Build runs `prisma generate`, `prisma db push`, then `next build`.
 
-For local dev with Postgres, use [Neon](https://neon.tech) or [Supabase](https://supabase.com) free tiers.
+3. **Supabase users**: `DATABASE_URL` must be the **Database** connection string, NOT the REST API URL.
+   - Go to Supabase Dashboard → Project Settings → Database
+   - Under "Connection string" → "URI", copy the string (replace `[YOUR-PASSWORD]` with your DB password)
+   - Format: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
+   - The `https://xxx.supabase.co` URL is for the REST API and will **not** work with Prisma.
+
+4. **Deploy** – Build runs `prisma generate` then `next build`. **Before first deploy**, run `npx prisma db push` locally with `DATABASE_URL` set to your production DB URL to create tables (or run the SQL from `prisma/schema.prisma` in Supabase SQL editor).
 
 ## Flow
 
