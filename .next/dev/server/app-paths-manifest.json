@@ -1,0 +1,11 @@
+{
+  "/admin/page": "app/admin/page.js",
+  "/api/admin/me/route": "app/api/admin/me/route.js",
+  "/api/admin/submissions/[id]/approve/route": "app/api/admin/submissions/[id]/approve/route.js",
+  "/api/image/route": "app/api/image/route.js",
+  "/api/submissions/route": "app/api/submissions/route.js",
+  "/api/tokens/route": "app/api/tokens/route.js",
+  "/page": "app/page.js",
+  "/submissions/page": "app/submissions/page.js",
+  "/submit/page": "app/submit/page.js"
+}

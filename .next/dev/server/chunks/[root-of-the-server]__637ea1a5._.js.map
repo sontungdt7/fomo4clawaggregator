@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["file:///home/metta/Fomo4ClawAggregator/lib/config.ts"],"sourcesContent":["export const ADMIN_ADDRESSES = (\n  process.env.ADMIN_ADDRESSES ?? ''\n)\n  .split(',')\n  .map((a) => a.trim().toLowerCase())\n  .filter(Boolean)\n\nexport function isAdmin(address: string): boolean {\n  return ADMIN_ADDRESSES.includes(address.toLowerCase())\n}\n"],"names":[],"mappings":";;;;;;AAAO,MAAM,kBAAkB,CAC7B,QAAQ,GAAG,CAAC,eAAe,IAAI,EACjC,EACG,KAAK,CAAC,KACN,GAAG,CAAC,CAAC,IAAM,EAAE,IAAI,GAAG,WAAW,IAC/B,MAAM,CAAC;AAEH,SAAS,QAAQ,OAAe;IACrC,OAAO,gBAAgB,QAAQ,CAAC,QAAQ,WAAW;AACrD"}},
+    {"offset": {"line": 60, "column": 0}, "map": {"version":3,"sources":["file:///home/metta/Fomo4ClawAggregator/app/api/admin/me/route.ts"],"sourcesContent":["import { NextResponse } from 'next/server'\nimport { isAdmin } from '@/lib/config'\n\nexport async function GET(request: Request) {\n  const address = new URL(request.url).searchParams.get('address')\n  if (!address) {\n    return NextResponse.json({ isAdmin: false })\n  }\n  return NextResponse.json({ isAdmin: isAdmin(address) })\n}\n"],"names":[],"mappings":";;;;AAAA;AACA;;;AAEO,eAAe,IAAI,OAAgB;IACxC,MAAM,UAAU,IAAI,IAAI,QAAQ,GAAG,EAAE,YAAY,CAAC,GAAG,CAAC;IACtD,IAAI,CAAC,SAAS;QACZ,OAAO,gJAAY,CAAC,IAAI,CAAC;YAAE,SAAS;QAAM;IAC5C;IACA,OAAO,gJAAY,CAAC,IAAI,CAAC;QAAE,SAAS,IAAA,0HAAO,EAAC;IAAS;AACvD"}}]
+}

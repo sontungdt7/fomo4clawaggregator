@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Submission {
+  id            String   @id @default(cuid())
+  tokenAddress  String   // Base token address
+  pairAddress   String?  // DEX pair address
+  name          String
+  symbol        String
+  image         String?
+  dexScreenerUrl String  // e.g. https://dexscreener.com/base/0x...
+  chainId       String   @default("base")
+  submittedBy   String   // wallet address
+  status        String   @default("pending") // pending | approved | rejected
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  approvedAt    DateTime?
+  approvedBy    String?
+
+  votes Vote[]
+
+  @@index([status])
+  @@index([submittedBy])
+}
+
+model Vote {
+  id           String   @id @default(cuid())
+  submissionId String
+  voterAddress String
+  direction    Int      // 1 = upvote, -1 = downvote
+  createdAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, voterAddress])
+  @@index([submissionId])
+}
