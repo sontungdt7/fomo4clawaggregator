@@ -42,7 +42,7 @@ export default function SubmitPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="container mx-auto flex-1 px-4 py-12">
+      <main className="container mx-auto flex-1 px-4 py-12 min-w-0 overflow-x-hidden">
         <div className="mx-auto max-w-xl">
           <h1 className="mb-2 text-2xl font-bold">Submit a Pair</h1>
           <p className="mb-8 text-sm text-muted-foreground">

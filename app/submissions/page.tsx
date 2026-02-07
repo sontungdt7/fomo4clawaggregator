@@ -41,25 +41,25 @@ function SubmissionCard({
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-border bg-card p-4">
+      <div className="flex items-center gap-3 min-w-0">
         <TokenImage
           src={sub.image}
           alt={sub.name}
           symbol={sub.symbol}
           className="h-12 w-12 rounded-full object-cover"
         />
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
             {sub.pairLabel && (
               <span className="rounded border border-border px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
                 {sub.pairLabel}
               </span>
             )}
-            <span className="font-semibold">
+            <span className="font-semibold truncate">
               {sub.quoteSymbol ? `${sub.symbol} / ${sub.quoteSymbol}` : sub.symbol}
             </span>
-            <span className="rounded bg-muted px-1.5 py-0.5 text-xs">{sub.name}</span>
+            <span className="rounded bg-muted px-1.5 py-0.5 text-xs shrink-0">{sub.name}</span>
             <span className="text-xs text-muted-foreground capitalize">({sub.status})</span>
           </div>
           <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
@@ -69,7 +69,7 @@ function SubmissionCard({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -145,7 +145,7 @@ export default function SubmissionsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="container mx-auto flex-1 px-4 py-8">
+      <main className="container mx-auto flex-1 px-4 py-8 min-w-0 overflow-x-hidden">
         <h1 className="mb-2 text-2xl font-bold">Submit & Vote</h1>
         <p className="mb-8 text-sm text-muted-foreground">
           Pending submissions. Upvote pairs you want listed. Admin approves high-vote pairs.

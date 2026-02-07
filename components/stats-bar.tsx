@@ -15,18 +15,18 @@ interface StatsBarProps {
 
 export function StatsBar({ totalTokens, volume24h, txns24h }: StatsBarProps) {
   return (
-    <section className="flex flex-wrap items-center gap-6 border-b border-border py-3 text-sm">
-      <div>
-        <span className="text-muted-foreground">24H Volume: </span>
-        <span className="font-medium tabular-nums">{fmtVolume(volume24h)}</span>
+    <section className="flex flex-wrap items-center gap-4 sm:gap-6 border-b border-border py-3 text-sm">
+      <div className="tabular-nums">
+        <span className="text-muted-foreground">24H Vol: </span>
+        <span className="font-medium">{fmtVolume(volume24h)}</span>
       </div>
-      <div>
+      <div className="tabular-nums">
         <span className="text-muted-foreground">24H Txns: </span>
-        <span className="font-medium tabular-nums">{txns24h.toLocaleString()}</span>
+        <span className="font-medium">{txns24h.toLocaleString()}</span>
       </div>
-      <div>
+      <div className="tabular-nums">
         <span className="text-muted-foreground">Pairs: </span>
-        <span className="font-medium tabular-nums">{totalTokens}</span>
+        <span className="font-medium">{totalTokens}</span>
       </div>
     </section>
   )

@@ -107,7 +107,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="container mx-auto flex-1 px-4 py-12">
+        <main className="container mx-auto flex-1 px-4 py-12 min-w-0 overflow-x-hidden">
           <h1 className="mb-2 text-2xl font-bold">Profile</h1>
           <p className="mb-4 text-muted-foreground">Log in to view your profile.</p>
           <p className="text-sm text-muted-foreground">
@@ -121,7 +121,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="container mx-auto flex-1 px-4 py-8">
+      <main className="container mx-auto flex-1 px-4 py-8 min-w-0 overflow-x-hidden">
         <h1 className="mb-2 text-2xl font-bold">Profile</h1>
         <p className="mb-8 text-sm text-muted-foreground">
           Your wallet and account settings.
@@ -198,9 +198,9 @@ export default function ProfilePage() {
                 {submissions.map((sub) => (
                   <div
                     key={sub.id}
-                    className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-border bg-card p-4"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
                       <TokenImage
                         src={sub.image}
                         alt={sub.name}
@@ -225,7 +225,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
                       <a
                         href={sub.dexScreenerUrl}
                         target="_blank"
@@ -266,9 +266,9 @@ export default function ProfilePage() {
                 {listed.map((sub) => (
                   <div
                     key={sub.id}
-                    className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-border bg-card p-4"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
                       <TokenImage
                         src={sub.image}
                         alt={sub.name}
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
                       <a
                         href={sub.dexScreenerUrl}
                         target="_blank"

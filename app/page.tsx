@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="container mx-auto flex-1 px-4 py-6">
+      <main className="container mx-auto flex-1 px-4 py-6 min-w-0 overflow-x-hidden">
         <TokenList />
       </main>
     </div>

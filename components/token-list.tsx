@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Token } from '@/lib/types'
 import { TokenTable } from './token-table'
+import { TokenRowMobile } from './token-row-mobile'
 import { TokenTabs, type SortTab } from './token-tabs'
 import { StatsBar } from './stats-bar'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -65,19 +66,20 @@ export function TokenList() {
         volume24h={totalVolume}
         txns24h={totalTxns}
       />
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rank by:</span>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="shrink-0 text-sm text-muted-foreground">Rank by:</span>
           <TokenTabs active={sortTab} onChange={setSortTab} />
         </div>
-        <button
-          type="button"
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Filters
-        </button>
       </div>
-      <TokenTable tokens={tokens} startRank={offset + 1} />
+      <div className="md:hidden space-y-2">
+        {tokens.map((token, i) => (
+          <TokenRowMobile key={token.address} token={token} rank={offset + i + 1} />
+        ))}
+      </div>
+      <div className="hidden md:block">
+        <TokenTable tokens={tokens} startRank={offset + 1} />
+      </div>
       {total > PAGE_SIZE && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
           <span className="text-sm text-muted-foreground">
