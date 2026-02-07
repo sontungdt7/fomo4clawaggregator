@@ -90,6 +90,7 @@ export function parseDexScreenerUrl(url: string): { chainId: string; address: st
 /**
  * Fetch token/pair info from DexScreener URL for submission
  * Supports both token URLs (dexscreener.com/base/0xTOKEN) and pair URLs (dexscreener.com/base/0xPAIR...)
+ * Uniswap V3 pool addresses are 40 hex chars (same as tokens), so we try pairs endpoint first.
  */
 export async function fetchPairFromUrl(
   url: string
@@ -114,27 +115,37 @@ export async function fetchPairFromUrl(
 
   let basePair: DexPair | null = null
 
+  // For 64-char addresses (Uniswap V4 etc): pairs only. For 40-char addresses (tokens, Uniswap V2/V3 pools): try pairs first (Uniswap V3), then tokens.
   if (isPair) {
-    // Pair URL: use /pairs/{chainId}/{pairAddress} endpoint
     const res = await fetch(
       `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${address}`,
       { cache: 'no-store' }
     )
     if (!res.ok) return null
     const data = await res.json()
-    // Pairs endpoint returns { pairs: [...] } (array, often 1 item)
     const pairs = data?.pairs ?? (Array.isArray(data) ? data : [data])
     basePair = pairs.find((p: DexPair) => p.chainId === chainId) ?? pairs[0] ?? null
   } else {
-    // Token URL: use /tokens/{address} endpoint
-    const res = await fetch(
-      `https://api.dexscreener.com/latest/dex/tokens/${address}`,
+    // 40-char address: could be token OR Uniswap V3 pool. Try pairs first.
+    const pairsRes = await fetch(
+      `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${address}`,
       { cache: 'no-store' }
     )
-    if (!res.ok) return null
-    const data = await res.json()
-    const pairs = data?.pairs ?? []
-    basePair = pairs.find((p: DexPair) => p.chainId === chainId) ?? pairs[0] ?? null
+    if (pairsRes.ok) {
+      const data = await pairsRes.json()
+      const pairs = data?.pairs ?? (Array.isArray(data) ? data : [data])
+      basePair = pairs.find((p: DexPair) => p.chainId === chainId) ?? pairs[0] ?? null
+    }
+    if (!basePair) {
+      const tokensRes = await fetch(
+        `https://api.dexscreener.com/latest/dex/tokens/${address}`,
+        { cache: 'no-store' }
+      )
+      if (!tokensRes.ok) return null
+      const data = await tokensRes.json()
+      const pairs = data?.pairs ?? []
+      basePair = pairs.find((p: DexPair) => p.chainId === chainId) ?? pairs[0] ?? null
+    }
   }
 
   if (!basePair) return null
