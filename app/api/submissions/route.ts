@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { fetchPairFromUrl } from '@/lib/dexscreener'
 
-const PAIR_INFO_CACHE_TTL = 5 * 60 * 1000
+const PAIR_INFO_CACHE_TTL = 1 * 60 * 1000 // 1 minute
 const pairInfoCache = new Map<string, { image?: string; quoteSymbol?: string; labels?: string[]; expires: number }>()
 
 export async function GET(request: Request) {

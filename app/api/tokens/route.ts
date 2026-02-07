@@ -26,7 +26,7 @@ type PairInfo = {
 const MIN_VOLUME = 1
 const MAX_TOKENS_TO_FETCH = 50 // limit DexScreener calls
 const DEXSCREENER_CONCURRENCY = 10
-const CACHE_TTL_MS = 5 * 60 * 1000
+const CACHE_TTL_MS = 1 * 60 * 1000 // 1 minute
 const marketCache = new Map<
   string,
   { data: NonNullable<Awaited<ReturnType<typeof fetchTokenPairs>>>; expires: number }

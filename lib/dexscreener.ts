@@ -23,7 +23,7 @@ interface DexResponse {
 }
 
 const DEXSCREENER_FETCH_OPTS: RequestInit = {
-  next: { revalidate: 300 } as const, // 5 min cache
+  next: { revalidate: 60 } as const, // 1 min cache
 }
 
 export async function fetchTokenPairs(

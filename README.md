@@ -17,14 +17,18 @@ Community-curated token pairs on Base. Users submit DexScreener pairs, vote on t
    ```
 
 2. Add to `.env` or `.env.local` (required):
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` and set:
-   - `DATABASE_URL` – PostgreSQL connection string (e.g. Neon, Supabase, or local Postgres)
+   - `DATABASE_URL` – PostgreSQL connection string
    - `ADMIN_ADDRESSES` – Comma-separated wallet addresses for admin access
 
-3. Initialize database:
+3. **Local development** – Use SQLite (default when `DATABASE_URL` starts with `file:`):
+   ```
+   DATABASE_URL="file:./dev.db"
+   ADMIN_ADDRESSES="0xYourWallet"
+   ```
+   Or use Docker Postgres: `docker compose up -d` then
+   `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fomo4claw"`
+
+4. Initialize database:
    ```bash
    npm run db:push
    ```
