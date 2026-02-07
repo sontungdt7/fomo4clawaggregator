@@ -9,7 +9,7 @@ import { TokenTabs, type SortTab } from './token-tabs'
 import { StatsBar } from './stats-bar'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 const MIN_VOLUME_USD = 1
 
 export function TokenList() {
@@ -19,7 +19,7 @@ export function TokenList() {
 
   const { data, error } = useQuery({
     queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab],
-    staleTime: 30_000, // 30s - matches server cache; 10 pairs keeps under DexScreener 60/min
+    staleTime: 45_000, // 45s - matches server cache; 30 pairs, 10 per page
     // Show "No tokens yet" immediately while fetching, instead of loading skeleton
     placeholderData: { tokens: [], total: 0, totalVolume: 0, totalTxns: 0 },
     queryFn: async () => {

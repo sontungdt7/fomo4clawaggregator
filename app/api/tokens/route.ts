@@ -24,10 +24,10 @@ type PairInfo = {
 }
 
 const MIN_VOLUME = 1
-const MAX_TOKENS_TO_FETCH = 10
+const MAX_TOKENS_TO_FETCH = 30
 const DEXSCREENER_CONCURRENCY = 10
-/** DexScreener: 60 req/min. With 10 tokens, 1 call each (pairInfo cached 5min) = 10/min. */
-const MARKET_CACHE_TTL_MS = 30 * 1000 // 30s - 10 tokens allows fresher updates under 60/min
+/** DexScreener: 60 req/min. With 30 tokens, 1 call each (pairInfo cached 5min) = 30/min. */
+const MARKET_CACHE_TTL_MS = 45 * 1000 // 45s - 30 tokens = ~40/min, under 60 limit
 const PAIR_INFO_CACHE_TTL_MS = 5 * 60 * 1000 // 5 min - image/quoteSymbol rarely change
 const marketCache = new Map<
   string,
