@@ -70,9 +70,9 @@ If you have `PONDER_API_URL` in `.env` from an older setup, you can remove it.
    - `DATABASE_URL` = `file:/data/prod.db`
    - `ADMIN_ADDRESSES` = your wallet addresses
 5. **Build command**: `npm install && npm run build`
-6. **Start command**: `npx prisma db push && npm start`
+6. **Start command**: `npm run render:start`
 
-The start command runs `prisma db push` on each deploy to create/sync tables, then starts the app. No Supabase or Postgres needed. **Note:** Persistent disks require a paid Render plan (Starter $7/mo).
+The start command creates `/data` if needed, selects the SQLite schema, runs `prisma db push` to create tables, then starts the app. No Supabase or Postgres needed. **Note:** Persistent disks require a paid Render plan (Starter $7/mo).
 
 ## Flow
 
