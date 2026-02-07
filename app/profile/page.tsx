@@ -33,6 +33,10 @@ export default function ProfilePage() {
     }
   }
 
+  const shortAddress = address
+    ? `${address.slice(0, 6)}…${address.slice(-4)}`
+    : ''
+
   const { data: adminData } = useQuery({
     queryKey: ['admin', address],
     queryFn: async () => {
@@ -127,15 +131,18 @@ export default function ProfilePage() {
           Your wallet and account settings.
         </p>
 
-        <div className="mb-12 rounded-lg border border-border bg-card p-6">
+        <div className="mb-12 rounded-lg border border-border bg-card p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-semibold">Wallet</h2>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-4 py-2 font-mono text-sm">
-              <span className="text-muted-foreground">{address}</span>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted/50 px-3 sm:px-4 py-2 font-mono text-sm">
+              <span className="min-w-0 flex-1 text-muted-foreground sm:flex-none" title={address}>
+                <span className="sm:hidden">{shortAddress}</span>
+                <span className="hidden sm:inline">{address}</span>
+              </span>
               <button
                 type="button"
                 onClick={copyAddress}
-                className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="shrink-0 rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                 title="Copy address"
               >
                 {copied ? (

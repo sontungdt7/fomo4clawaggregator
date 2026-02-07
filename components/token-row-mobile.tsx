@@ -61,7 +61,7 @@ export function TokenRowMobile({ token, rank }: TokenRowMobileProps) {
           <span className={m && (m.priceChange24h ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
             {fmtPct(m?.priceChange24h)}
           </span>
-          <span className="tabular-nums">{fmtNum(m?.volume24h)}</span>
+          <span className="tabular-nums">{fmtNum(m?.fdv)}</span>
         </div>
       </div>
       <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
