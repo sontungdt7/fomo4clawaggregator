@@ -21,7 +21,7 @@ export default function SubmitPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dexScreenerUrl: url.trim(),
-          walletAddress: address,
+          walletAddress: address ?? undefined,
         }),
       })
       const data = await res.json()

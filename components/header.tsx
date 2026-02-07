@@ -29,12 +29,6 @@ export function Header() {
           >
             Submit
           </Link>
-          <Link
-            href="/admin"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Admin
-          </Link>
           <WalletButton />
         </nav>
       </div>
