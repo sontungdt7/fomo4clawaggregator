@@ -51,7 +51,7 @@ export default function SubmitPage() {
 
           {!isConnected ? (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm">
-              Connect your wallet to submit a pair.
+              Log in to submit a pair.
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

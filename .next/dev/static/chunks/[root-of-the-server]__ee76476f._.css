@@ -518,6 +518,11 @@
     display: inline-flex;
   }
 
+  .size-7 {
+    width: calc(var(--spacing) * 7);
+    height: calc(var(--spacing) * 7);
+  }
+
   .h-2\.5 {
     height: calc(var(--spacing) * 2.5);
   }

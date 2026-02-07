@@ -1,14 +1,17 @@
 'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
-
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
-    }
-  }
-}
+import {
+  useConnection,
+  useConnect,
+  useDisconnect,
+  useConnectors,
+} from 'wagmi'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  type ReactNode,
+} from 'react'
 
 type WalletContextValue = {
   address: string | null
@@ -20,43 +23,38 @@ type WalletContextValue = {
 
 const WalletContext = createContext<WalletContextValue | null>(null)
 
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null)
-  const [isConnecting, setIsConnecting] = useState(false)
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const connection = useConnection()
+  const { connectAsync, isPending } = useConnect()
+  const { disconnect: wagmiDisconnect } = useDisconnect()
+  const connectors = useConnectors()
+
+  const portoConnector = connectors?.find(
+    (c) => c.id === 'xyz.ithaca.porto' || c.name === 'Porto'
+  )
 
   const connect = useCallback(async () => {
-    if (typeof window === 'undefined' || !window.ethereum) return
-    setIsConnecting(true)
+    const connector = portoConnector ?? connectors?.[0]
+    if (!connector) return
     try {
-      const accounts = (await window.ethereum!.request({
-        method: 'eth_requestAccounts',
-      })) as string[]
-      if (accounts[0]) setAddress(accounts[0])
+      await connectAsync({ connector })
     } catch {
       // User rejected
-    } finally {
-      setIsConnecting(false)
     }
-  }, [])
+  }, [connectAsync, portoConnector, connectors])
 
-  const disconnect = useCallback(() => setAddress(null), [])
+  const disconnect = useCallback(() => {
+    wagmiDisconnect()
+  }, [wagmiDisconnect])
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.ethereum) return
-    window.ethereum
-      .request({ method: 'eth_accounts' })
-      .then((accounts) => {
-        const a = accounts as string[]
-        if (a[0]) setAddress(a[0])
-      })
-      .catch(() => {})
-  }, [])
+  const address = connection.address ?? null
+  const isConnecting = connection.status === 'connecting' || isPending
 
   return (
     <WalletContext.Provider
       value={{
         address,
-        isConnected: !!address,
+        isConnected: connection.isConnected && !!address,
         connect,
         disconnect,
         isConnecting,

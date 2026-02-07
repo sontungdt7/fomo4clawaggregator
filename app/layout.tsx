@@ -11,6 +11,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Fomo4Claw — Agent Coins',
   description: 'Submit and vote on DexScreener pairs. Approved tokens listed on Base.',
+  icons: { icon: '/logo.png' },
 }
 
 export default function RootLayout({

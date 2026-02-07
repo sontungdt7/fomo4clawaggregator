@@ -34,7 +34,7 @@ export function WalletButton() {
                 }}
                 className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
               >
-                Disconnect
+                Log Out
               </button>
             </div>
           </>
@@ -50,7 +50,7 @@ export function WalletButton() {
       disabled={isConnecting}
       className="rounded-md border border-primary bg-primary/20 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/30 disabled:opacity-50"
     >
-      {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+      {isConnecting ? 'Connecting...' : 'Login'}
     </button>
   )
 }
