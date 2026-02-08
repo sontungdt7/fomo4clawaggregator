@@ -58,7 +58,7 @@ interface TokenTableProps {
 export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full min-w-[900px] text-sm">
+      <table className="w-full min-w-[700px] text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/30">
             <th className="px-4 py-3 text-left font-medium text-muted-foreground">
@@ -74,21 +74,6 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
               Added
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Txns
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Volume
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              5M
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              1H
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              6H
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               24H
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
@@ -96,6 +81,9 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               MCAP
+            </th>
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+              Vote
             </th>
             <th className="w-10" />
           </tr>
@@ -146,21 +134,6 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
                   {fmtAdded(token.createdAt)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {m?.txns24h != null ? m.txns24h.toLocaleString() : '—'}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtNum(m?.volume24h)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <PctCell value={m?.priceChange5m} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <PctCell value={m?.priceChange1h} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <PctCell value={m?.priceChange6h} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <PctCell value={m?.priceChange24h} />
