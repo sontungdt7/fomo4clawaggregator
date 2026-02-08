@@ -23,7 +23,7 @@ export function TokenList() {
 
   const { data, error } = useQuery({
     queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab, address],
-    staleTime: 45_000,
+    staleTime: 15_000, // 15s - only 10 pairs per page, can refresh faster
     placeholderData: { tokens: [], total: 0, totalVolume: 0, totalTxns: 0 },
     queryFn: async () => {
       await fetch('/api/visitor-id')

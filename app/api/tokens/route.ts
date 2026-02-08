@@ -28,9 +28,9 @@ type PairInfo = {
 }
 
 const MIN_VOLUME = 1
-const MAX_TOKENS_TO_FETCH = 30
+const PAGE_SIZE = 10
 const DEXSCREENER_CONCURRENCY = 10
-const MARKET_CACHE_TTL_MS = 45 * 1000
+const MARKET_CACHE_TTL_MS = 15 * 1000 // 15s - only 10 pairs per page, can refresh faster
 const PAIR_INFO_CACHE_TTL_MS = 5 * 60 * 1000
 const marketCache = new Map<
   string,
@@ -76,21 +76,28 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const minVolume = parseFloat(searchParams.get('minVolume') ?? '1') || 1
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10) || 20, 100)
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '10', 10) || 10, 50)
     const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
     const sort = (searchParams.get('sort') ?? 'votes') as 'votes' | 'new' | 'mcap'
     const walletParam = searchParams.get('wallet')?.toLowerCase()
     const voterAddress = walletParam ?? (await getVisitorIdIfPresent()) ?? (await getOrCreateVisitorId())
 
-    const pairs = await prisma.pair.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: MAX_TOKENS_TO_FETCH,
-    })
+    const [total, pairs] = await Promise.all([
+      prisma.pair.count(),
+      prisma.pair.findMany({
+        orderBy:
+          sort === 'votes'
+            ? [{ voteCount: 'desc' }, { createdAt: 'desc' }]
+            : [{ createdAt: 'desc' }],
+        skip: offset,
+        take: limit,
+      }),
+    ])
 
     if (pairs.length === 0) {
       return NextResponse.json({
         tokens: [],
-        total: 0,
+        total,
         totalVolume: 0,
         totalTxns: 0,
       })
@@ -151,33 +158,21 @@ export async function GET(request: Request) {
 
     const withMarket = await runWithConcurrency(pairs, fetchOne, DEXSCREENER_CONCURRENCY)
 
-    const filtered = (withMarket as TokenWithMarket[]).filter(
+    let result = (withMarket as TokenWithMarket[]).filter(
       (t: TokenWithMarket) => (t.marketData?.volume24h ?? 0) > minVolume
     )
 
-    const ts = (t: TokenWithMarket) => new Date(t.createdAt).getTime()
-    const sorted = [...filtered].sort((a, b) => {
-      const m1 = a.marketData
-      const m2 = b.marketData
-      switch (sort) {
-        case 'votes':
-          return (b.voteCount ?? 0) - (a.voteCount ?? 0)
-        case 'new':
-          return ts(b) - ts(a) // sorted by createdAt (when added to our DB)
-        case 'mcap':
-          return (m2?.fdv ?? 0) - (m1?.fdv ?? 0)
-        default:
-          return 0
-      }
-    })
+    if (sort === 'mcap') {
+      result = [...result].sort(
+        (a, b) => (b.marketData?.fdv ?? 0) - (a.marketData?.fdv ?? 0)
+      )
+    }
 
-    const total = sorted.length
-    const totalVolume = sorted.reduce((acc: number, t: TokenWithMarket) => acc + (t.marketData?.volume24h ?? 0), 0)
-    const totalTxns = sorted.reduce((acc: number, t: TokenWithMarket) => acc + (t.marketData?.txns24h ?? 0), 0)
-    const page = sorted.slice(offset, offset + limit)
+    const totalVolume = result.reduce((acc: number, t: TokenWithMarket) => acc + (t.marketData?.volume24h ?? 0), 0)
+    const totalTxns = result.reduce((acc: number, t: TokenWithMarket) => acc + (t.marketData?.txns24h ?? 0), 0)
 
     return NextResponse.json({
-      tokens: page,
+      tokens: result,
       total,
       totalVolume,
       totalTxns,
