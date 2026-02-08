@@ -27,4 +27,7 @@ export interface Token {
     fdv?: number
     txns24h?: number
   }
+  id?: string
+  voteCount?: number
+  myVote?: number
 }

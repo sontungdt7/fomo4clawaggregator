@@ -1,12 +1,12 @@
 # Fomo4Claw
 
-Community-curated token pairs on Base. Users submit DexScreener pairs, vote on them, and admins approve for listing.
+Community-curated token pairs on Base. Users add DexScreener pairs and upvote/downvote directly. No admin approval.
 
 ## Architecture
 
-- **Next.js app** – Submit page, voting, admin approval, main listing
-- **Prisma + SQLite or PostgreSQL** – Submissions and votes (SQLite for local/Render; Postgres for Vercel)
-- **Wallet connect** – wagmi/viem for Base
+- **Next.js app** – Main page with pairs and vote buttons, Submit page
+- **Prisma + SQLite or PostgreSQL** – Single Pair table with inline votes (SQLite for local/Render; Postgres for Vercel)
+- **Wallet connect** – wagmi/viem for Base (optional; cookie-based anonymous for add/vote)
 - **DexScreener API** – Market data for listed tokens
 
 ## Setup
@@ -17,13 +17,11 @@ Community-curated token pairs on Base. Users submit DexScreener pairs, vote on t
    ```
 
 2. Add to `.env` or `.env.local` (required):
-   - `DATABASE_URL` – PostgreSQL connection string
-   - `ADMIN_ADDRESSES` – Comma-separated wallet addresses for admin access
+   - `DATABASE_URL` – PostgreSQL connection string (or SQLite for local)
 
 3. **Local development** – Use SQLite (default when `DATABASE_URL` starts with `file:`):
    ```
    DATABASE_URL="file:./dev.db"
-   ADMIN_ADDRESSES="0xYourWallet"
    ```
    Or use Docker Postgres: `docker compose up -d` then
    `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fomo4claw"`
@@ -46,7 +44,6 @@ If you have `PONDER_API_URL` in `.env` from an older setup, you can remove it.
 1. **Create a PostgreSQL database** – Vercel Postgres (recommended), Neon, or Supabase.
 2. **Connect the repo** to Vercel and add env vars:
    - `DATABASE_URL` – **must be a PostgreSQL connection string** (starts with `postgresql://` or `postgres://`)
-   - `ADMIN_ADDRESSES` – comma-separated admin wallet addresses
 
 3. **Supabase users**: `DATABASE_URL` must be the **Database** connection string, NOT the REST API URL.
    - Go to Supabase Dashboard → Project Settings → Database
@@ -68,7 +65,6 @@ If you have `PONDER_API_URL` in `.env` from an older setup, you can remove it.
    - Size: 1 GB
 4. **Environment variables**:
    - `DATABASE_URL` = `file:/data/prod.db`
-   - `ADMIN_ADDRESSES` = your wallet addresses
 5. **Build command**: `npm install && npm run build`
 6. **Start command**: `npm run render:start`
 
@@ -76,7 +72,6 @@ The start command creates `/data` if needed, selects the SQLite schema, runs `pr
 
 ## Flow
 
-1. **Submit** – User pastes DexScreener URL, submits for voting
-2. **Vote** – Other users upvote/downvote submissions
-3. **Admin** – Admin approves high-vote pairs
-4. **Listed** – Approved tokens appear on main page with DexScreener market data
+1. **Add Pair** – User pastes DexScreener URL; pair goes live immediately
+2. **Vote** – Anyone can upvote or downvote pairs on the main page
+3. **Listed** – Pairs appear sorted by votes, trending, market cap, etc.

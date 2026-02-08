@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getOrCreateVisitorId } from '@/lib/visitor-id'
+
+function parseVotes(votesJson: string | null): Record<string, number> {
+  if (!votesJson) return {}
+  try {
+    const o = JSON.parse(votesJson) as Record<string, number>
+    return typeof o === 'object' && o !== null ? o : {}
+  } catch {
+    return {}
+  }
+}
 
 export async function POST(
   request: Request,
@@ -13,12 +24,13 @@ export async function POST(
       direction?: number
     }
 
-    if (!walletAddress || typeof walletAddress !== 'string') {
-      return NextResponse.json(
-        { error: 'walletAddress is required (connect wallet)' },
-        { status: 400 }
-      )
+    let voter: string
+    if (walletAddress && typeof walletAddress === 'string') {
+      voter = walletAddress.toLowerCase()
+    } else {
+      voter = await getOrCreateVisitorId()
     }
+
     if (direction !== 1 && direction !== -1) {
       return NextResponse.json(
         { error: 'direction must be 1 (upvote) or -1 (downvote)' },
@@ -26,34 +38,27 @@ export async function POST(
       )
     }
 
-    const submission = await prisma.submission.findUnique({
+    const pair = await prisma.pair.findUnique({
       where: { id },
     })
-    if (!submission) {
-      return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
+    if (!pair) {
+      return NextResponse.json({ error: 'Pair not found' }, { status: 404 })
     }
 
-    const voter = walletAddress.toLowerCase()
+    const votes = parseVotes(pair.votes)
+    votes[voter] = direction
+    const voteCount = Object.values(votes).reduce((a, b) => a + b, 0)
 
-    await prisma.vote.upsert({
-      where: {
-        submissionId_voterAddress: { submissionId: id, voterAddress: voter },
+    await prisma.pair.update({
+      where: { id },
+      data: {
+        votes: JSON.stringify(votes),
+        voteCount,
       },
-      create: {
-        submissionId: id,
-        voterAddress: voter,
-        direction,
-      },
-      update: { direction },
-    })
-
-    const sum = await prisma.vote.aggregate({
-      where: { submissionId: id },
-      _sum: { direction: true },
     })
 
     return NextResponse.json({
-      voteCount: sum._sum.direction ?? 0,
+      voteCount,
       message: direction === 1 ? 'Upvoted' : 'Downvoted',
     })
   } catch (e) {

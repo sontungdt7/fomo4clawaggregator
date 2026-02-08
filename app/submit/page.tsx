@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { useQueryClient } from '@tanstack/react-query'
 import { useWallet } from '@/lib/wallet-context'
 import { Header } from '@/components/header'
 
 export default function SubmitPage() {
+  const qc = useQueryClient()
   const { address, isConnected } = useWallet()
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -12,7 +15,7 @@ export default function SubmitPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!url.trim() || !isConnected || !address) return
+    if (!url.trim()) return
     setStatus('loading')
     setMessage('')
     try {
@@ -21,7 +24,7 @@ export default function SubmitPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dexScreenerUrl: url.trim(),
-          walletAddress: address ?? undefined,
+          walletAddress: isConnected && address ? address : undefined,
         }),
       })
       const data = await res.json()
@@ -30,9 +33,10 @@ export default function SubmitPage() {
         setMessage(data.error ?? `HTTP ${res.status}`)
         return
       }
-      setStatus('success')
-      setMessage(data.message ?? 'Submitted!')
+        setStatus('success')
+      setMessage(data.message ?? 'Pair added.')
       setUrl('')
+      qc.invalidateQueries({ queryKey: ['tokens'] })
     } catch (err) {
       setStatus('error')
       setMessage(String(err))
@@ -44,17 +48,12 @@ export default function SubmitPage() {
       <Header />
       <main className="container mx-auto flex-1 px-4 py-12 min-w-0 overflow-x-hidden">
         <div className="mx-auto max-w-xl">
-          <h1 className="mb-2 text-2xl font-bold">Submit a Pair</h1>
+          <h1 className="mb-2 text-2xl font-bold">Add a Pair</h1>
           <p className="mb-8 text-sm text-muted-foreground">
-            Paste a DexScreener URL to submit a pair for community voting. High upvotes can get listed.
+            Paste a DexScreener URL to add a pair.
           </p>
 
-          {!isConnected ? (
-            <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm">
-              Log in to submit a pair.
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="url"
                 placeholder="https://dexscreener.com/base/0x..."
@@ -68,10 +67,9 @@ export default function SubmitPage() {
                 disabled={status === 'loading' || !url.trim()}
                 className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
-                {status === 'loading' ? 'Submitting...' : 'Submit for Voting'}
+                {status === 'loading' ? 'Submitting...' : 'Submit'}
               </button>
             </form>
-          )}
 
           {message && (
             <div
@@ -81,7 +79,17 @@ export default function SubmitPage() {
                   : 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
               }`}
             >
-              {message}
+              <div className="flex flex-col gap-3">
+                <span>{message}</span>
+                {status === 'success' && (
+                  <Link
+                    href="/"
+                    className="inline-flex w-fit rounded-md border border-primary bg-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/30"
+                  >
+                    View Agent Coins
+                  </Link>
+                )}
+              </div>
             </div>
           )}
         </div>

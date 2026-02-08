@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { fetchTokenPairs, fetchPairFromUrl } from '@/lib/dexscreener'
+import { getOrCreateVisitorId, getVisitorIdIfPresent } from '@/lib/visitor-id'
 
 type TokenWithMarket = {
+  id: string
   address: string
   name: string
   symbol: string
@@ -14,6 +16,8 @@ type TokenWithMarket = {
   explorerUrl: string
   dexScreenerUrl: string
   createdAt: string
+  voteCount: number
+  myVote?: number
   marketData: Awaited<ReturnType<typeof fetchTokenPairs>> | undefined
 }
 
@@ -26,9 +30,8 @@ type PairInfo = {
 const MIN_VOLUME = 1
 const MAX_TOKENS_TO_FETCH = 30
 const DEXSCREENER_CONCURRENCY = 10
-/** DexScreener: 60 req/min. With 30 tokens, 1 call each (pairInfo cached 5min) = 30/min. */
-const MARKET_CACHE_TTL_MS = 45 * 1000 // 45s - 30 tokens = ~40/min, under 60 limit
-const PAIR_INFO_CACHE_TTL_MS = 5 * 60 * 1000 // 5 min - image/quoteSymbol rarely change
+const MARKET_CACHE_TTL_MS = 45 * 1000
+const PAIR_INFO_CACHE_TTL_MS = 5 * 60 * 1000
 const marketCache = new Map<
   string,
   { data: NonNullable<Awaited<ReturnType<typeof fetchTokenPairs>>>; expires: number }
@@ -43,6 +46,16 @@ function getCached(address: string) {
 
 function setCached(address: string, data: NonNullable<Awaited<ReturnType<typeof fetchTokenPairs>>>) {
   marketCache.set(address.toLowerCase(), { data, expires: Date.now() + MARKET_CACHE_TTL_MS })
+}
+
+function parseVotes(votesJson: string | null): Record<string, number> {
+  if (!votesJson) return {}
+  try {
+    const o = JSON.parse(votesJson) as Record<string, number>
+    return typeof o === 'object' && o !== null ? o : {}
+  } catch {
+    return {}
+  }
 }
 
 async function runWithConcurrency<T, R>(
@@ -65,22 +78,16 @@ export async function GET(request: Request) {
     const minVolume = parseFloat(searchParams.get('minVolume') ?? '1') || 1
     const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10) || 20, 100)
     const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
-    const sort = (searchParams.get('sort') ?? 'trending') as
-      | 'trending'
-      | 'new'
-      | 'gainers'
-      | 'mcap'
-      | 'volume'
+    const sort = (searchParams.get('sort') ?? 'votes') as 'votes' | 'new' | 'mcap'
+    const walletParam = searchParams.get('wallet')?.toLowerCase()
+    const voterAddress = walletParam ?? (await getVisitorIdIfPresent()) ?? (await getOrCreateVisitorId())
 
-    const approved = await prisma.submission.findMany({
-      where: { status: 'approved' },
-      include: { votes: true },
-      orderBy: { approvedAt: 'desc' },
+    const pairs = await prisma.pair.findMany({
+      orderBy: { createdAt: 'desc' },
       take: MAX_TOKENS_TO_FETCH,
     })
 
-    // Fast path: no tokens → return immediately (no DexScreener calls)
-    if (approved.length === 0) {
+    if (pairs.length === 0) {
       return NextResponse.json({
         tokens: [],
         total: 0,
@@ -89,59 +96,60 @@ export async function GET(request: Request) {
       })
     }
 
-    const fetchOne = async (s: { tokenAddress: string; name: string; symbol: string; image: string | null; dexScreenerUrl: string; createdAt: Date }) => {
-      let market = getCached(s.tokenAddress)
+    const fetchOne = async (p: { id: string; tokenAddress: string; name: string; symbol: string; image: string | null; dexScreenerUrl: string; createdAt: Date; voteCount: number; votes: string | null }) => {
+      let market = getCached(p.tokenAddress)
       if (!market) {
-        market = await fetchTokenPairs(s.tokenAddress) ?? undefined
-        if (market) setCached(s.tokenAddress, market)
+        market = await fetchTokenPairs(p.tokenAddress) ?? undefined
+        if (market) setCached(p.tokenAddress, market)
       }
 
-      // Fetch full pair info (image, quoteSymbol, labels) from DexScreener URL
-      let image = s.image
+      let image = p.image
       let quoteSymbol: string | undefined
       let pairLabel: string | undefined
-      if (s.dexScreenerUrl) {
-        const cached = pairInfoCache.get(s.dexScreenerUrl)
+      if (p.dexScreenerUrl) {
+        const cached = pairInfoCache.get(p.dexScreenerUrl)
         if (cached && Date.now() < cached.expires) {
           image = cached.data.image ?? image
           quoteSymbol = cached.data.quoteSymbol
           pairLabel = cached.data.labels?.[0]
         } else {
-          const pairInfo = await fetchPairFromUrl(s.dexScreenerUrl)
+          const pairInfo = await fetchPairFromUrl(p.dexScreenerUrl)
           if (pairInfo) {
             if (pairInfo.image?.includes('/cms/images')) image = pairInfo.image
             quoteSymbol = pairInfo.quoteSymbol
             pairLabel = pairInfo.labels?.[0]
-            pairInfoCache.set(s.dexScreenerUrl, {
+            pairInfoCache.set(p.dexScreenerUrl, {
               data: { image: image ?? undefined, quoteSymbol, labels: pairInfo.labels },
               expires: Date.now() + PAIR_INFO_CACHE_TTL_MS,
             })
           }
         }
       }
-      if (!image) image = `https://cdn.dexscreener.com/token-icons/${s.tokenAddress.toLowerCase()}.png`
+      if (!image) image = `https://cdn.dexscreener.com/token-icons/${p.tokenAddress.toLowerCase()}.png`
+
+      const votes = parseVotes(p.votes)
+      const myVote = voterAddress ? votes[voterAddress] : undefined
 
       return {
-        address: s.tokenAddress,
-        name: s.name,
-        symbol: s.symbol,
+        id: p.id,
+        address: p.tokenAddress,
+        name: p.name,
+        symbol: p.symbol,
         quoteSymbol,
         pairLabel,
         image,
         source: 'community' as const,
         clankerUrl: undefined,
-        explorerUrl: `https://basescan.org/token/${s.tokenAddress}`,
-        dexScreenerUrl: s.dexScreenerUrl,
-        createdAt: s.createdAt.toISOString(),
+        explorerUrl: `https://basescan.org/token/${p.tokenAddress}`,
+        dexScreenerUrl: p.dexScreenerUrl,
+        createdAt: p.createdAt.toISOString(),
+        voteCount: p.voteCount,
+        myVote,
         marketData: market,
       }
     }
 
-    const withMarket = await runWithConcurrency(
-      approved,
-      fetchOne,
-      DEXSCREENER_CONCURRENCY
-    )
+    const withMarket = await runWithConcurrency(pairs, fetchOne, DEXSCREENER_CONCURRENCY)
 
     const filtered = (withMarket as TokenWithMarket[]).filter(
       (t: TokenWithMarket) => (t.marketData?.volume24h ?? 0) > minVolume
@@ -152,19 +160,12 @@ export async function GET(request: Request) {
       const m1 = a.marketData
       const m2 = b.marketData
       switch (sort) {
-        case 'trending':
-          return (
-            (m2?.priceChange6h ?? m2?.priceChange24h ?? -Infinity) -
-            (m1?.priceChange6h ?? m1?.priceChange24h ?? -Infinity)
-          )
+        case 'votes':
+          return (b.voteCount ?? 0) - (a.voteCount ?? 0)
         case 'new':
-          return ts(b) - ts(a)
-        case 'gainers':
-          return (m2?.priceChange24h ?? -Infinity) - (m1?.priceChange24h ?? -Infinity)
+          return ts(b) - ts(a) // sorted by createdAt (when added to our DB)
         case 'mcap':
           return (m2?.fdv ?? 0) - (m1?.fdv ?? 0)
-        case 'volume':
-          return (m2?.volume24h ?? 0) - (m1?.volume24h ?? 0)
         default:
           return 0
       }

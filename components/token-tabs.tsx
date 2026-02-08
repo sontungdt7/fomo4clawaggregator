@@ -1,13 +1,11 @@
 'use client'
 
-export type SortTab = 'trending' | 'new' | 'gainers' | 'mcap' | 'volume'
+export type SortTab = 'votes' | 'new' | 'mcap'
 
 const TABS: { id: SortTab; label: string; labelShort: string }[] = [
-  { id: 'trending', label: 'Trending 6H', labelShort: 'Trending' },
-  { id: 'new', label: 'New Pairs', labelShort: 'New' },
-  { id: 'gainers', label: 'Top Gainers', labelShort: 'Gainers' },
+  { id: 'votes', label: 'Votes', labelShort: 'Votes' },
+  { id: 'new', label: 'New Added', labelShort: 'New' },
   { id: 'mcap', label: 'MarketCap', labelShort: 'MCap' },
-  { id: 'volume', label: '24h Volume', labelShort: 'Volume' },
 ]
 
 interface TokenTabsProps {

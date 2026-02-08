@@ -1,7 +1,7 @@
 'use client'
 
 import type { Token } from '@/lib/types'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { TokenImage } from './token-image'
 
 function fmtNum(n?: number): string {
@@ -24,7 +24,7 @@ function fmtPct(n?: number): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`
 }
 
-function fmtAge(createdAt?: string): string {
+function fmtAdded(createdAt?: string): string {
   if (!createdAt) return '—'
   const d = new Date(createdAt)
   const now = new Date()
@@ -51,9 +51,11 @@ function PctCell({ value }: { value?: number }) {
 interface TokenTableProps {
   tokens: Token[]
   startRank?: number
+  onVote?: (id: string, dir: number) => void
+  voting?: boolean
 }
 
-export function TokenTable({ tokens, startRank = 1 }: TokenTableProps) {
+export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full min-w-[900px] text-sm">
@@ -69,7 +71,7 @@ export function TokenTable({ tokens, startRank = 1 }: TokenTableProps) {
               Price
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Age
+              Added
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Txns
@@ -143,7 +145,7 @@ export function TokenTable({ tokens, startRank = 1 }: TokenTableProps) {
                   {fmtPrice(m?.priceUsd)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtAge(token.createdAt)}
+                  {fmtAdded(token.createdAt)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
                   {m?.txns24h != null ? m.txns24h.toLocaleString() : '—'}
@@ -168,6 +170,35 @@ export function TokenTable({ tokens, startRank = 1 }: TokenTableProps) {
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
                   {fmtNum(m?.fdv)}
+                </td>
+                <td className="px-4 py-3">
+                  {token.id && onVote && (
+                    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => onVote(token.id!, 1)}
+                        disabled={voting}
+                        className={`rounded p-1.5 transition-colors ${
+                          token.myVote === 1 ? 'bg-emerald-500/30 text-emerald-400' : 'hover:bg-muted text-muted-foreground'
+                        }`}
+                        title="Upvote"
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="min-w-[1.5rem] text-center text-xs tabular-nums">{token.voteCount ?? 0}</span>
+                      <button
+                        type="button"
+                        onClick={() => onVote(token.id!, -1)}
+                        disabled={voting}
+                        className={`rounded p-1.5 transition-colors ${
+                          token.myVote === -1 ? 'bg-rose-500/30 text-rose-400' : 'hover:bg-muted text-muted-foreground'
+                        }`}
+                        title="Downvote"
+                      >
+                        <ThumbsDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">

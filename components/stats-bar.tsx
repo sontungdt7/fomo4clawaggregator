@@ -1,32 +1,27 @@
 'use client'
 
-function fmtVolume(n: number): string {
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`
-  if (n >= 1e3) return `$${(n / 1e3).toFixed(1)}K`
-  return `$${n.toFixed(0)}`
-}
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 
 interface StatsBarProps {
   totalTokens: number
-  volume24h: number
-  txns24h: number
 }
 
-export function StatsBar({ totalTokens, volume24h, txns24h }: StatsBarProps) {
+export function StatsBar({ totalTokens }: StatsBarProps) {
   return (
     <section className="flex flex-wrap items-center gap-4 sm:gap-6 border-b border-border py-3 text-sm">
-      <div className="tabular-nums">
-        <span className="text-muted-foreground">24H Vol: </span>
-        <span className="font-medium">{fmtVolume(volume24h)}</span>
-      </div>
-      <div className="tabular-nums">
-        <span className="text-muted-foreground">24H Txns: </span>
-        <span className="font-medium">{txns24h.toLocaleString()}</span>
-      </div>
-      <div className="tabular-nums">
-        <span className="text-muted-foreground">Pairs: </span>
-        <span className="font-medium">{totalTokens}</span>
+      <div className="tabular-nums flex items-center gap-2">
+        <span>
+          <span className="text-muted-foreground">Pairs: </span>
+          <span className="font-medium">{totalTokens}</span>
+        </span>
+        <Link
+          href="/submit"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          <Plus className="h-4 w-4" />
+          Add Pair
+        </Link>
       </div>
     </section>
   )
