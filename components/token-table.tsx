@@ -1,8 +1,11 @@
 'use client'
 
 import type { Token } from '@/lib/types'
-import { ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { ExternalLink, ThumbsUp, ThumbsDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { TokenImage } from './token-image'
+
+export type SortKey = 'votes' | 'new' | 'mcap' | 'price' | '24h'
+export type SortOrder = 'asc' | 'desc'
 
 function fmtNum(n?: number): string {
   if (n == null) return '—'
@@ -53,9 +56,47 @@ interface TokenTableProps {
   startRank?: number
   onVote?: (id: string, dir: number) => void
   voting?: boolean
+  sort?: SortKey
+  order?: SortOrder
+  onSortChange?: (sort: SortKey, order: SortOrder) => void
 }
 
-export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTableProps) {
+function SortableTh({
+  children,
+  sortKey,
+  active,
+  order,
+  onClick,
+}: {
+  children: React.ReactNode
+  sortKey: SortKey
+  active: boolean
+  order: SortOrder
+  onClick: () => void
+}) {
+  return (
+    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center gap-1 w-full justify-end hover:text-foreground transition-colors"
+      >
+        {children}
+        {active ? (
+          order === 'asc' ? (
+            <ArrowUp className="h-3.5 w-3.5 opacity-100" />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5 opacity-100" />
+          )
+        ) : (
+          <ArrowUp className="h-3.5 w-3.5 opacity-40" />
+        )}
+      </button>
+    </th>
+  )
+}
+
+export function TokenTable({ tokens, startRank = 1, onVote, voting, sort = 'votes', order = 'desc', onSortChange }: TokenTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full min-w-[700px] text-sm">
@@ -67,21 +108,41 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
             <th className="px-4 py-3 text-left font-medium text-muted-foreground">
               Token
             </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Vote
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Price
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              MCAP
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              24H
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Added
-            </th>
+            {onSortChange ? (
+              <SortableTh sortKey="votes" active={sort === 'votes'} order={order} onClick={() => onSortChange('votes', sort === 'votes' ? (order === 'asc' ? 'desc' : 'asc') : 'desc')}>
+                Vote
+              </SortableTh>
+            ) : (
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">Vote</th>
+            )}
+            {onSortChange ? (
+              <SortableTh sortKey="price" active={sort === 'price'} order={order} onClick={() => onSortChange('price', sort === 'price' ? (order === 'asc' ? 'desc' : 'asc') : 'desc')}>
+                Price
+              </SortableTh>
+            ) : (
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">Price</th>
+            )}
+            {onSortChange ? (
+              <SortableTh sortKey="mcap" active={sort === 'mcap'} order={order} onClick={() => onSortChange('mcap', sort === 'mcap' ? (order === 'asc' ? 'desc' : 'asc') : 'desc')}>
+                MCAP
+              </SortableTh>
+            ) : (
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">MCAP</th>
+            )}
+            {onSortChange ? (
+              <SortableTh sortKey="24h" active={sort === '24h'} order={order} onClick={() => onSortChange('24h', sort === '24h' ? (order === 'asc' ? 'desc' : 'asc') : 'desc')}>
+                24H
+              </SortableTh>
+            ) : (
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">24H</th>
+            )}
+            {onSortChange ? (
+              <SortableTh sortKey="new" active={sort === 'new'} order={order} onClick={() => onSortChange('new', sort === 'new' ? (order === 'asc' ? 'desc' : 'asc') : 'desc')}>
+                Added
+              </SortableTh>
+            ) : (
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">Added</th>
+            )}
             <th className="w-10" />
           </tr>
         </thead>

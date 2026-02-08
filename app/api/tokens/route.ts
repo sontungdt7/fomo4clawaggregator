@@ -78,17 +78,20 @@ export async function GET(request: Request) {
     const minVolume = parseFloat(searchParams.get('minVolume') ?? '1') || 1
     const limit = Math.min(parseInt(searchParams.get('limit') ?? '10', 10) || 10, 50)
     const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
-    const sort = (searchParams.get('sort') ?? 'votes') as 'votes' | 'new' | 'mcap'
+    const sort = (searchParams.get('sort') ?? 'votes') as 'votes' | 'new' | 'mcap' | 'price' | '24h'
+    const order = (searchParams.get('order') ?? 'desc') as 'asc' | 'desc'
     const walletParam = searchParams.get('wallet')?.toLowerCase()
     const voterAddress = walletParam ?? (await getVisitorIdIfPresent()) ?? (await getOrCreateVisitorId())
+
+    const prismaOrder = (dir: 'asc' | 'desc') =>
+      sort === 'votes'
+        ? ([{ voteCount: dir }, { createdAt: 'desc' }] as const)
+        : ([{ createdAt: dir }] as const)
 
     const [total, pairs] = await Promise.all([
       prisma.pair.count(),
       prisma.pair.findMany({
-        orderBy:
-          sort === 'votes'
-            ? [{ voteCount: 'desc' }, { createdAt: 'desc' }]
-            : [{ createdAt: 'desc' }],
+        orderBy: sort === 'votes' || sort === 'new' ? prismaOrder(order) : [{ voteCount: 'desc' }, { createdAt: 'desc' }],
         skip: offset,
         take: limit,
       }),
@@ -162,10 +165,20 @@ export async function GET(request: Request) {
       (t: TokenWithMarket) => (t.marketData?.volume24h ?? 0) > minVolume
     )
 
-    if (sort === 'mcap') {
-      result = [...result].sort(
-        (a, b) => (b.marketData?.fdv ?? 0) - (a.marketData?.fdv ?? 0)
-      )
+    if (sort === 'mcap' || sort === 'price' || sort === '24h') {
+      result = [...result].sort((a, b) => {
+        let diff = 0
+        if (sort === 'mcap') {
+          diff = (a.marketData?.fdv ?? 0) - (b.marketData?.fdv ?? 0)
+        } else if (sort === 'price') {
+          const pa = parseFloat(a.marketData?.priceUsd ?? '0') || 0
+          const pb = parseFloat(b.marketData?.priceUsd ?? '0') || 0
+          diff = pa - pb
+        } else {
+          diff = (a.marketData?.priceChange24h ?? 0) - (b.marketData?.priceChange24h ?? 0)
+        }
+        return order === 'desc' ? -diff : diff
+      })
     }
 
     const totalVolume = result.reduce((acc: number, t: TokenWithMarket) => acc + (t.marketData?.volume24h ?? 0), 0)

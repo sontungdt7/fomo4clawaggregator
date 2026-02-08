@@ -7,8 +7,8 @@ import { useWallet } from '@/lib/wallet-context'
 import type { Token } from '@/lib/types'
 import { TokenTable } from './token-table'
 import { TokenRowMobile } from './token-row-mobile'
-import { TokenTabs, type SortTab } from './token-tabs'
 import { StatsBar } from './stats-bar'
+import type { SortKey, SortOrder } from './token-table'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const PAGE_SIZE = 10
@@ -17,14 +17,14 @@ const MIN_VOLUME_USD = 1
 export function TokenList() {
   const { address, isConnected } = useWallet()
   const qc = useQueryClient()
-  const [sortTab, setSortTab] = useState<SortTab>('votes')
+  const [sortTab, setSortTab] = useState<SortKey>('votes')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const [page, setPage] = useState(1)
   const offset = (page - 1) * PAGE_SIZE
 
-  const { data, error } = useQuery({
-    queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab, address],
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab, sortOrder, address],
     staleTime: 15_000, // 15s - only 10 pairs per page, can refresh faster
-    placeholderData: { tokens: [], total: 0, totalVolume: 0, totalTxns: 0 },
     queryFn: async () => {
       await fetch('/api/visitor-id')
       const params = new URLSearchParams({
@@ -32,6 +32,7 @@ export function TokenList() {
         limit: String(PAGE_SIZE),
         offset: String(offset),
         sort: sortTab,
+        order: sortOrder,
       })
       if (isConnected && address) params.set('wallet', address)
       const res = await fetch(`/api/tokens?${params}`)
@@ -68,12 +69,25 @@ export function TokenList() {
 
   const handleVote = (id: string, dir: number) => voteMutation.mutateAsync({ id, direction: dir })
 
+  const handleSortChange = (sort: SortKey, order: SortOrder) => {
+    setSortTab(sort)
+    setSortOrder(order)
+  }
+
   useEffect(() => {
     setPage(1)
-  }, [sortTab])
+  }, [sortTab, sortOrder])
   useEffect(() => {
     setPage((p) => Math.min(p, totalPages))
   }, [totalPages])
+
+  if (isLoading) {
+    return (
+      <div className="py-16 text-center text-sm text-muted-foreground">
+        Loading…
+      </div>
+    )
+  }
 
   if (error || (tokens.length === 0 && total === 0)) {
     return (
@@ -98,12 +112,7 @@ export function TokenList() {
   return (
     <section>
       <StatsBar totalTokens={total} />
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="shrink-0 text-sm text-muted-foreground">Rank by:</span>
-          <TokenTabs active={sortTab} onChange={setSortTab} />
-        </div>
-      </div>
+      <div className="mb-4 md:mb-0">
       <div className="md:hidden space-y-2">
         {tokens.map((token, i) => (
           <TokenRowMobile
@@ -121,7 +130,11 @@ export function TokenList() {
           startRank={offset + 1}
           onVote={handleVote}
           voting={voteMutation.isPending}
+          sort={sortTab}
+          order={sortOrder}
+          onSortChange={handleSortChange}
         />
+      </div>
       </div>
       {total > PAGE_SIZE && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">

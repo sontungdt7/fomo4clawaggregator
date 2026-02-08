@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { ExternalLink } from 'lucide-react'
 
 export function Header() {
   return (
@@ -12,6 +13,15 @@ export function Header() {
           <span className="hidden sm:inline">Fomo4Claw</span>
           <span className="sm:hidden">F4C</span>
         </Link>
+        <a
+          href="https://t.me/+MwIJa6YfiyxhZDA1"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <span>Telegram</span>
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
       </div>
     </header>
   )
