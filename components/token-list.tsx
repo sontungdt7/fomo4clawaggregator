@@ -13,6 +13,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const PAGE_SIZE = 10
 const MIN_VOLUME_USD = 1
+const REFRESH_INTERVAL_MS = 15_000
 
 export function TokenList() {
   const { address, isConnected } = useWallet()
@@ -22,9 +23,10 @@ export function TokenList() {
   const [page, setPage] = useState(1)
   const offset = (page - 1) * PAGE_SIZE
 
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ['tokens', MIN_VOLUME_USD, PAGE_SIZE, offset, sortTab, sortOrder, address],
-    staleTime: 15_000, // 15s - only 10 pairs per page, can refresh faster
+    staleTime: REFRESH_INTERVAL_MS,
+    refetchInterval: REFRESH_INTERVAL_MS,
     queryFn: async () => {
       await fetch('/api/visitor-id')
       const params = new URLSearchParams({
@@ -74,6 +76,18 @@ export function TokenList() {
     setSortOrder(order)
   }
 
+  const [countdown, setCountdown] = useState(0)
+  useEffect(() => {
+    if (!dataUpdatedAt) return
+    const update = () => {
+      const ms = dataUpdatedAt + REFRESH_INTERVAL_MS - Date.now()
+      setCountdown(Math.max(0, Math.ceil(ms / 1000)))
+    }
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
+  }, [dataUpdatedAt])
+
   useEffect(() => {
     setPage(1)
   }, [sortTab, sortOrder])
@@ -111,7 +125,7 @@ export function TokenList() {
 
   return (
     <section>
-      <StatsBar totalTokens={total} />
+      <StatsBar totalTokens={total} countdownSeconds={countdown} />
       <div className="mb-4 md:mb-0">
       <div className="md:hidden space-y-2">
         {tokens.map((token, i) => (

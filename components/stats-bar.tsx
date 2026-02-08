@@ -5,11 +5,12 @@ import { Plus } from 'lucide-react'
 
 interface StatsBarProps {
   totalTokens: number
+  countdownSeconds?: number
 }
 
-export function StatsBar({ totalTokens }: StatsBarProps) {
+export function StatsBar({ totalTokens, countdownSeconds }: StatsBarProps) {
   return (
-    <section className="flex flex-wrap items-center gap-4 sm:gap-6 border-b border-border py-3 text-sm">
+    <section className="flex flex-wrap items-center justify-between gap-4 sm:gap-6 border-b border-border py-3 text-sm">
       <div className="tabular-nums flex items-center gap-2">
         <span>
           <span className="text-muted-foreground">Pairs: </span>
@@ -23,6 +24,11 @@ export function StatsBar({ totalTokens }: StatsBarProps) {
           Add Pair
         </Link>
       </div>
+      {countdownSeconds != null && (
+        <span className="text-muted-foreground text-xs">
+          Update: {countdownSeconds}s
+        </span>
+      )}
     </section>
   )
 }

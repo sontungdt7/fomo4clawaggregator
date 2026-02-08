@@ -3,6 +3,7 @@ import { Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Footer } from '@/components/footer'
+import { InstallPrompt } from '@/components/install-prompt'
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -12,7 +13,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Fomo4Claw — Community Curated Agent Coins',
   description: 'Community Curated Agent Coins.',
-  icons: { icon: '/logo.png' },
+  icons: { icon: '/logo.png', apple: '/logo.png' },
+  appleWebApp: { capable: true, title: 'Fomo4Claw' },
+}
+
+export const viewport = {
+  width: 'device-width' as const,
+  initialScale: 1,
+  themeColor: '#09090b',
 }
 
 export default function RootLayout({
@@ -26,6 +34,7 @@ export default function RootLayout({
             {children}
             <Footer />
           </div>
+          <InstallPrompt />
         </Providers>
       </body>
     </html>
