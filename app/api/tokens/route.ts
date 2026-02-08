@@ -83,15 +83,17 @@ export async function GET(request: Request) {
     const walletParam = searchParams.get('wallet')?.toLowerCase()
     const voterAddress = walletParam ?? (await getVisitorIdIfPresent()) ?? (await getOrCreateVisitorId())
 
-    const prismaOrder = (dir: 'asc' | 'desc') =>
+    const orderBy =
       sort === 'votes'
-        ? ([{ voteCount: dir }, { createdAt: 'desc' }] as const)
-        : ([{ createdAt: dir }] as const)
+        ? ([{ voteCount: order }, { createdAt: 'desc' }] as const)
+        : sort === 'new'
+          ? ([{ createdAt: order }] as const)
+          : ([{ voteCount: 'desc' }, { createdAt: 'desc' }] as const)
 
     const [total, pairs] = await Promise.all([
       prisma.pair.count(),
       prisma.pair.findMany({
-        orderBy: sort === 'votes' || sort === 'new' ? prismaOrder(order) : [{ voteCount: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [...orderBy],
         skip: offset,
         take: limit,
       }),
