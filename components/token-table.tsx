@@ -68,22 +68,19 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
               Token
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+              Vote
+            </th>
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Price
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Added
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              24H
-            </th>
-            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Liquidity
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               MCAP
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-              Vote
+              24H
+            </th>
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+              Added
             </th>
             <th className="w-10" />
           </tr>
@@ -129,21 +126,6 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtPrice(m?.priceUsd)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtAdded(token.createdAt)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <PctCell value={m?.priceChange24h} />
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtNum(m?.liquidity)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {fmtNum(m?.fdv)}
-                </td>
                 <td className="px-4 py-3">
                   {token.id && onVote && (
                     <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
@@ -172,6 +154,18 @@ export function TokenTable({ tokens, startRank = 1, onVote, voting }: TokenTable
                       </button>
                     </div>
                   )}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {fmtPrice(m?.priceUsd)}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {fmtNum(m?.fdv)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <PctCell value={m?.priceChange24h} />
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {fmtAdded(token.createdAt)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
